@@ -228,12 +228,22 @@ class CalendarDisplay {
 
 		}
 		foreach($activity as $key => $activityItem){
-			if(isset($GLOBALS['app_list_strings']['moduleList'][ $key ]) && !empty($GLOBALS['app_list_strings']['moduleList'][ $key ]) && !empty($this->cal->activityList[ $key ]) ){
-				$activity[ $key ]['label'] = $GLOBALS['app_list_strings']['moduleList'][ $key ];
-			}else{
-				unset($activity[ $key ]);
-			}
-		}
+      			// Check whether it is defined in the custom color definitions or part of the standard colors in this file
+      			if(!empty($this->cal->activityList[ $key ])) {
+        			// this is IN the default activity list (i.e. DEFINED in CalendarDisplay.php)
+        			if(isset($GLOBALS['app_list_strings']['moduleList'][ $key ]) && !empty($GLOBALS['app_list_strings']['moduleList'][ $key ]) ){
+          				$activity[ $key ]['label'] = $GLOBALS['app_list_strings']['moduleList'][ $key ];
+        			} else {
+          				unset($activity[ $key ]);
+        			}
+      			} else {
+        			// this is NOT in the default activity list (i.e. NOT defined in CalendarDisplay.php)
+        			if( !isset($GLOBALS['sugar_config']['CalendarColors'][$key]['body']) || $GLOBALS['sugar_config']['CalendarColors'][$key]['body']=='') {
+          				unset($activity[ $key ]);
+        			}
+      			}
+    		}
+
 		if(isset($activity) && !empty($activity)){
 			$this->activity_colors = $activity;
 		}
