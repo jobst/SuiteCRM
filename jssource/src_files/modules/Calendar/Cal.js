@@ -650,12 +650,29 @@ CAL.dialog_save = function () {
         newEvent.title = res['name'];
         newEvent.record = res['record'];
         newEvent.id = res['record'];
-        if (undefined !== global_colorList[res.module_name]) {
-          newEvent.backgroundColor = '#' + global_colorList[res.module_name].body;
-          newEvent.borderColor = '#' + global_colorList[res.module_name].border;
-          newEvent.textColor = '#' + global_colorList[res.module_name].text;
+ 	if(undefined !== global_colorList[res.module_name]) {
+	  if(res.module_name=='Meetings') {
+            // only do this for Meetings
+            if(undefined !== global_colorList[res['status']].body)
+              newEvent.backgroundColor = '#' + global_colorList[res['status']].body;
+            else
+              newEvent.backgroundColor = '#' + global_colorList[res.module_name].body;
+            if(undefined !== global_colorList[res['status']].border)
+              newEvent.borderColor = '#' + global_colorList[res['status']].border;
+            else
+              newEvent.borderColor = '#' + global_colorList[res.module_name].border;
+            if(undefined !== global_colorList[res['status']].text)
+              newEvent.textColor = '#' + global_colorList[res['status']].text;
+            else
+              newEvent.textColor = '#' + global_colorList[res.module_name].text;
+          } else {
+            // Do this for all other modules
+            newEvent.backgroundColor = '#' + global_colorList[res.module_name].body;
+            newEvent.borderColor = '#' + global_colorList[res.module_name].border;
+            newEvent.textColor = '#' + global_colorList[res.module_name].text;
+          }
         }
-        newEvent.start = new Date(moment.unix(res['ts_start']).format("MM/DD/YYYY") + " " + moment(res['time_start'], 'hh:mma').format("HH:mm"));
+	newEvent.start = new Date(moment.unix(res['ts_start']).format("MM/DD/YYYY") + " " + moment(res['time_start'], 'hh:mma').format("HH:mm"));
         newEvent.end = moment(new Date(moment.unix(res['ts_start']).format("MM/DD/YYYY") + " " + moment(res['time_start'], 'hh:mma').format("HH:mm"))).add(res['duration_hours'], 'hours').add(res['duration_minutes'], 'minutes');
         if ((res['duration_hours'] % 24 === 0) && (res['time_start'] == "12:00am")) {
           newEvent.allDay = "true";
@@ -878,12 +895,29 @@ $($.fullCalendar).ready(function () {
         valueToPush['editable'] = false;
       }
 
-      if (undefined !== global_colorList[element.module_name]) {
-
-        valueToPush["backgroundColor"] = '#' + global_colorList[element.module_name].body;
-        valueToPush["borderColor"] = '#' + global_colorList[element.module_name].border;
-        valueToPush["textColor"] = '#' + global_colorList[element.module_name].text;
-      }
+      if(undefined !== global_colorList[element.module_name]) {
+        // Only want this for meetings, calls etc not required
+        if(element.module_name=='Meetings') {
+          // just make sure it *IS* defind in config_override.php
+          if(undefined !== global_colorList[element['status']] ) {
+            // Color is defined in config_override.php, use it
+            valueToPush["backgroundColor"] = '#' + global_colorList[element['status']].body;
+            valueToPush["borderColor"] = '#' + global_colorList[element['status']].border;
+            valueToPush["textColor"] = '#' + global_colorList[element['status']].text;
+          } else {
+            // Color is NOT defined in config_override.php, use the values from CalendarDisplay.php
+            valueToPush["backgroundColor"] = '#' + global_colorList[element.module_name].body;
+            valueToPush["borderColor"] = '#' + global_colorList[element.module_name].border;
+            valueToPush["textColor"] = '#' + global_colorList[element.module_name].text;
+          }
+        }
+        else {
+          // if module NON meeting we use the original code, use the values from CalendarDisplay.php
+          valueToPush["backgroundColor"] = '#' + global_colorList[element.module_name].body;
+          valueToPush["borderColor"] = '#' + global_colorList[element.module_name].border;
+          valueToPush["textColor"] = '#' + global_colorList[element.module_name].text;
+        }
+      }	    
 
       if ((element['duration_hours'] % 24 === 0) && (element['time_start'] == "12:00am" || element['time_start'] == "00:00")) {
         valueToPush['allDay'] = true;
